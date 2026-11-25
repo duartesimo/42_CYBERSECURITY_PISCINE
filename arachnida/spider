@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
 from html.parser import HTMLParser
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 import sys
 import requests
 import os
 
 images = []
+allowed_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
 
 # Extract image sources from HTML tags
 class ImageParser(HTMLParser):
@@ -43,9 +44,23 @@ download_path = "./data/"
 os.makedirs(download_path, exist_ok=True)
 
 for image_url in complete_url_images:
-    image_response = requests.get(image_url, timeout=10)
-    name = image_response.url.split("/")[-1]
+    name = urlparse(image_url).path.split("/")[-1]
+
+    extension = os.path.splitext(name)[1].lower()
+    if extension not in allowed_extensions:
+        print("Invalid extension")
+        continue
+
+    try:
+        image_response = requests.get(image_url, timeout=10)
+    except requests.exceptions.RequestException:
+        print("Failed to connect")
+        continue
+
+    if image_response.status_code != 200:
+        print("Failed to download image")
+        continue
+
     path = os.path.join(download_path, name)
-    
     with open(path, "wb") as f:
         f.write(image_response.content)
