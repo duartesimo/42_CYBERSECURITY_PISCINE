@@ -103,17 +103,29 @@ def download_images(complete_url_images, download_path):
         with open(path, "wb") as f:
             f.write(image_response.content)
 
-# Main function
-def main():
+# Crawl webpages recursively
+def crawl(url, path, cur_depth, max_depth):
 
-    args = parse_arguments()
-    response = get_response(args.url)
-
+    response = get_response(url)
     if response is None:
-        sys.exit(1)
+        return
 
     complete_url_images, complete_url_links = extract_images(response)
-    download_images(complete_url_images, args.p)
-    print(complete_url_links)
+    download_images(complete_url_images, path)
+
+    if cur_depth < max_depth:
+        for link in complete_url_links:
+            crawl(link, path, cur_depth + 1, max_depth)
+
+
+# Main function
+def main():
+    args = parse_arguments()
+
+    if args.r:
+        crawl(args.url, args.p, 0, args.l)
+    else:
+        crawl(args.url, args.p, 0, 0)
+
 
 main()
