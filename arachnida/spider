@@ -18,49 +18,68 @@ class ImageParser(HTMLParser):
                 if name == 'src':
                     images.append(value)
 
-# Validate command-line arguments
+def get_response(url):
+    try:
+        response = requests.get(url, timeout=10)
+    except requests.exceptions.RequestException:
+        print("Failed to connect")
+        return None
+
+    if response.status_code != 200:
+        print("HTTP request failed")
+        return None
+
+    return response
+
+def extract_images(response):
+    images.clear()
+
+    parser = ImageParser()
+    parser.feed(response.text)
+
+    complete_url_images = []
+
+    for image in images:
+        result = urljoin(response.url, image)
+        complete_url_images.append(result)
+
+    return complete_url_images
+
+
+def download_images(complete_url_images):
+    download_path = "./data/"
+    os.makedirs(download_path, exist_ok=True)
+
+    for image_url in complete_url_images:
+        name = urlparse(image_url).path.split("/")[-1]
+
+        extension = os.path.splitext(name)[1].lower()
+        if extension not in allowed_extensions:
+            print("Invalid extension")
+            continue
+
+        image_response = get_response(image_url)
+
+        if image_response is None:
+            continue
+
+        path = os.path.join(download_path, name)
+
+        with open(path, "wb") as f:
+            f.write(image_response.content)
+
+
 if len(sys.argv) != 2:
     print("Usage: ./spider URL")
     sys.exit(1)
 
 url = sys.argv[1]
 
-# Request the HTML content of the webpage
-response = requests.get(url, timeout=10)
+response = get_response(url)
 
-# Parse HTML and collect image sources
-parser = ImageParser()
-parser.feed(response.text)
+if response is None:
+    sys.exit(1)
 
-# Convert relative image URLs into absolute URLs
-complete_url_images = []
+complete_url_images = extract_images(response)
 
-for image in images:
-    result = urljoin(response.url, image)
-    complete_url_images.append(result)
-
-# Download and save images
-download_path = "./data/"
-os.makedirs(download_path, exist_ok=True)
-
-for image_url in complete_url_images:
-    name = urlparse(image_url).path.split("/")[-1]
-
-    extension = os.path.splitext(name)[1].lower()
-    if extension not in allowed_extensions:
-        print("Invalid extension")
-        continue
-
-    try:
-        image_response = requests.get(image_url, timeout=10)
-    except requests.exceptions.RequestException:
-        print("Failed to connect")
-        continue
-
-    if image_response.status_code != 200:
-        print("Failed to download image")
-        continue
-
-    path = os.path.join(download_path, name)
-    with open(path, "wb") as f:
-        f.write(image_response.content)
+download_images(complete_url_images)
