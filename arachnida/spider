@@ -7,10 +7,11 @@ import requests
 import os
 
 images = []
+links = []
 allowed_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
 
-# Extract image sources from HTML tags
-class ImageParser(HTMLParser):
+# Extract image sources and page links from HTML tags
+class PageParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag == 'img':
@@ -18,6 +19,12 @@ class ImageParser(HTMLParser):
                 if name == 'src':
                     images.append(value)
 
+        elif tag == 'a':
+            for name, value in attrs:
+                if name == 'href':
+                    links.append(value)
+
+# Get response
 def get_response(url):
     try:
         response = requests.get(url, timeout=10)
@@ -31,21 +38,28 @@ def get_response(url):
 
     return response
 
+# Extract image and links into list
 def extract_images(response):
     images.clear()
+    links.clear()
 
-    parser = ImageParser()
+    parser = PageParser()
     parser.feed(response.text)
 
     complete_url_images = []
+    complete_url_links = []
 
     for image in images:
         result = urljoin(response.url, image)
         complete_url_images.append(result)
 
-    return complete_url_images
+    for link in links:
+            result = urljoin(response.url, link)
+            complete_url_links.append(result)
 
+    return complete_url_images, complete_url_links
 
+# Download images to folder
 def download_images(complete_url_images):
     download_path = "./data/"
     os.makedirs(download_path, exist_ok=True)
@@ -80,6 +94,7 @@ response = get_response(url)
 if response is None:
     sys.exit(1)
 
-complete_url_images = extract_images(response)
+complete_url_images, complete_url_links = extract_images(response)
 
 download_images(complete_url_images)
+print(complete_url_links)
