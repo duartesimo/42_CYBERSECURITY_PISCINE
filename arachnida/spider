@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from html.parser import HTMLParser
+from urllib.parse import urljoin
 import sys
 import requests
 
@@ -24,4 +25,10 @@ response = requests.get(url, timeout=10)
 parser = ImageParser()
 parser.feed(response.text)
 
-print(images)
+complete_url_images = []
+
+for image in images:
+    result = urljoin(response.url, image)
+    complete_url_images.append(result)
+
+print(complete_url_images)
