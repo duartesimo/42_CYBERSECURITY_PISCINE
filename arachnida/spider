@@ -5,10 +5,21 @@ from urllib.parse import urljoin, urlparse
 import sys
 import requests
 import os
+import argparse
 
 images = []
 links = []
 allowed_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
+
+# Define command-line arguments
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("url")
+    parser.add_argument("-r", action="store_true")
+    parser.add_argument("-l", type=int, default=5)
+    parser.add_argument("-p", type=str, default="./data/")
+
+    return parser.parse_args()
 
 # Extract image sources and page links from HTML tags
 class PageParser(HTMLParser):
@@ -54,14 +65,24 @@ def extract_images(response):
         complete_url_images.append(result)
 
     for link in links:
-            result = urljoin(response.url, link)
-            complete_url_links.append(result)
+        if not link:
+            print("Invalid link")
+            continue
+
+        result = urljoin(response.url, link)
+
+        if urlparse(result).scheme not in ["http", "https"]:
+            continue
+
+        if urlparse(result).netloc != urlparse(response.url).netloc:
+            continue
+
+        complete_url_links.append(result)
 
     return complete_url_images, complete_url_links
 
 # Download images to folder
-def download_images(complete_url_images):
-    download_path = "./data/"
+def download_images(complete_url_images, download_path):
     os.makedirs(download_path, exist_ok=True)
 
     for image_url in complete_url_images:
@@ -82,19 +103,17 @@ def download_images(complete_url_images):
         with open(path, "wb") as f:
             f.write(image_response.content)
 
+# Main function
+def main():
 
-if len(sys.argv) != 2:
-    print("Usage: ./spider URL")
-    sys.exit(1)
+    args = parse_arguments()
+    response = get_response(args.url)
 
-url = sys.argv[1]
+    if response is None:
+        sys.exit(1)
 
-response = get_response(url)
+    complete_url_images, complete_url_links = extract_images(response)
+    download_images(complete_url_images, args.p)
+    print(complete_url_links)
 
-if response is None:
-    sys.exit(1)
-
-complete_url_images, complete_url_links = extract_images(response)
-
-download_images(complete_url_images)
-print(complete_url_links)
+main()
