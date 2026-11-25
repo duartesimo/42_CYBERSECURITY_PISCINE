@@ -4,6 +4,7 @@ from html.parser import HTMLParser
 from urllib.parse import urljoin
 import sys
 import requests
+import os
 
 images = []
 
@@ -38,8 +39,13 @@ for image in images:
     complete_url_images.append(result)
 
 # Download and save images
+download_path = "./data/"
+os.makedirs(download_path, exist_ok=True)
+
 for image_url in complete_url_images:
     image_response = requests.get(image_url, timeout=10)
     name = image_response.url.split("/")[-1]
-    with open(name, "wb") as f:
+    path = os.path.join(download_path, name)
+    
+    with open(path, "wb") as f:
         f.write(image_response.content)
