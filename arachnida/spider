@@ -10,6 +10,7 @@ import argparse
 images = []
 links = []
 allowed_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
+visited = set()
 
 # Define command-line arguments
 def parse_arguments():
@@ -105,6 +106,10 @@ def download_images(complete_url_images, download_path):
 
 # Crawl webpages recursively
 def crawl(url, path, cur_depth, max_depth):
+
+    if url in visited:
+        return
+    visited.add(url)
 
     response = get_response(url)
     if response is None:
