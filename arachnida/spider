@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+import sys
+import requests
+
+if len(sys.argv) != 2:
+    print("Usage: ./spider URL")
+    sys.exit(1)
+
+url = sys.argv[1]
+
+response = requests.get(url, timeout=10)
+print(response.text[:1000])
