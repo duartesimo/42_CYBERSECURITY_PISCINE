@@ -7,6 +7,7 @@ import requests
 
 images = []
 
+# Extract image sources from HTML tags
 class ImageParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
@@ -15,20 +16,30 @@ class ImageParser(HTMLParser):
                 if name == 'src':
                     images.append(value)
 
+# Validate command-line arguments
 if len(sys.argv) != 2:
     print("Usage: ./spider URL")
     sys.exit(1)
 
 url = sys.argv[1]
+
+# Request the HTML content of the webpage
 response = requests.get(url, timeout=10)
 
+# Parse HTML and collect image sources
 parser = ImageParser()
 parser.feed(response.text)
 
+# Convert relative image URLs into absolute URLs
 complete_url_images = []
 
 for image in images:
     result = urljoin(response.url, image)
     complete_url_images.append(result)
 
-print(complete_url_images)
+# Download and save images
+for image_url in complete_url_images:
+    image_response = requests.get(image_url, timeout=10)
+    name = image_response.url.split("/")[-1]
+    with open(name, "wb") as f:
+        f.write(image_response.content)
