@@ -4,6 +4,7 @@ from datetime import datetime
 from PIL import Image, ExifTags
 import os
 import argparse
+import subprocess
 
 allowed_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
 
@@ -12,10 +13,17 @@ def display_file_info(file):
 
     info = os.stat(file)
     date_format = "%d/%m/%Y %H:%M:%S"
+    creation_time = int(subprocess.check_output(["stat", "-c", "%W", "--", file]))
 
     print(f"Filename: \033[92m{os.path.basename(file)}\033[0m")
     print(f"Path: {os.path.abspath(file)}")
     print(f"Size: {info.st_size} bytes")
+
+    if creation_time != 0:
+        print(f"Creation date: {datetime.fromtimestamp(creation_time).strftime(date_format)}")
+    else:
+        print("Creation date: Not available")
+
     print(f"Last modified: {datetime.fromtimestamp(info.st_mtime).strftime(date_format)}")
     print(f"Last accessed: {datetime.fromtimestamp(info.st_atime).strftime(date_format)}")
     print(f"Metadata changed: {datetime.fromtimestamp(info.st_ctime).strftime(date_format)}")
