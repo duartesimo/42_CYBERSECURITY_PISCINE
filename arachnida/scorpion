@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+import os
+import argparse
+
+allowed_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
+
+# Parse command-line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("files", nargs="+")
+args = parser.parse_args()
+
+# Validate image files
+for file in args.files:
+    if not os.path.isfile(file):
+        print(f"File not found: {file}")
+        continue
+
+    extension = os.path.splitext(file)[1].lower()
+    if extension not in allowed_extensions:
+        print(f"Invalid extension: {file}")
+        continue
+
+    print(f"Valid file: {file}")
