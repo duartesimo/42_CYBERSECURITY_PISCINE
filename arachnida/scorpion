@@ -38,6 +38,9 @@ def display_image_info(file):
         print(f"Width: {img.width} pixels")
         print(f"Height: {img.height} pixels")
         print(f"Color mode: {img.mode}")
+        for key, value in img.info.items():
+            if key != "exif" and not isinstance(value, bytes):
+                print(f"{key}: {value}")
         print()
 
 # Display EXIF information
@@ -58,22 +61,33 @@ def display_exif_info(file):
         print()
 
 # Parse command-line arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("files", nargs="+")
-args = parser.parse_args()
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("files", nargs="+")
+    return parser.parse_args()
 
-# Validate image files
-for file in args.files:
-    if not os.path.isfile(file):
-        print(f"File not found: {file}")
-        continue
+# Main function
+def main():
 
-    extension = os.path.splitext(file)[1].lower()
-    if extension not in allowed_extensions:
-        print(f"Invalid extension: {file}")
-        continue
+    args = parse_arguments()
 
-    display_file_info(file)
-    display_image_info(file)
-    display_exif_info(file)
-    print("==========================================\n")
+    for file in args.files:
+        if not os.path.isfile(file):
+            print(f"File not found: {file}")
+            continue
+
+        extension = os.path.splitext(file)[1].lower()
+        if extension not in allowed_extensions:
+            print(f"Invalid extension: {file}")
+            continue
+
+        try:
+            display_file_info(file)
+            display_image_info(file)
+            display_exif_info(file)
+        except (OSError, subprocess.CalledProcessError):
+            print(f"Failed to process file: {file}")
+
+        print("==========================================\n")
+
+main()
