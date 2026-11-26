@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from datetime import datetime
-from PIL import Image
+from PIL import Image, ExifTags
 import os
 import argparse
 
@@ -32,6 +32,23 @@ def display_image_info(file):
         print(f"Color mode: {img.mode}")
         print()
 
+# Display EXIF information
+def display_exif_info(file):
+
+    with Image.open(file) as img:
+
+        exif = img.getexif()
+        if not exif:
+            print("\033[91mNo EXIF metadata found.\033[0m")
+            print()
+            return
+
+        print("\033[94mEXIF metadata:\033[0m")
+        for tag, value in exif.items():
+            name = ExifTags.TAGS.get(tag, tag)
+            print(f"{name}: {value}")
+        print()
+
 # Parse command-line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("files", nargs="+")
@@ -50,3 +67,5 @@ for file in args.files:
 
     display_file_info(file)
     display_image_info(file)
+    display_exif_info(file)
+    print("==========================================\n")
