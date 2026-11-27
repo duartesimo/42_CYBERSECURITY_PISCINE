@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+import argparse
+
+# Parse command-line arguments
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-g", type=str)
+    parser.add_argument("-k", type=str)
+
+    return parser.parse_args()
+
+# Main function
+def main():
+    args = parse_arguments()
+
+    if args.g:
+        print(f"Generate mode: {args.g}")
+
+    if args.k:
+        print(f"OTP mode: {args.k}")
+
+    if not args.g and not args.k:
+        print("Usage: ./ft_otp [-g FILE] [-k FILE]")
+
+
+main()
