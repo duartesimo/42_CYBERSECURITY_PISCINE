@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from cryptography.fernet import Fernet
 import argparse
 import os
 
@@ -35,7 +36,19 @@ def read_key(file):
         if char not in hex_chars:
             print("Invalid hexadecimal character")
             return None
+
     return key
+
+# Encrypt hexadecimal key
+def encrypt_key(key):
+
+    encryption_key = Fernet.generate_key()
+
+    cipher = Fernet(encryption_key)
+
+    encrypted_key = cipher.encrypt(key.encode())
+
+    return encrypted_key, encryption_key
 
 # Main function
 def main():
@@ -46,7 +59,8 @@ def main():
 
         key = read_key(args.g)
         if key is not None:
-            print("Valid hexadecimal key")
+            encrypted_key, encryption_key = encrypt_key(key)
+            print("Key successfully encrypted")
 
     if args.k:
         print(f"OTP mode: {args.k}")
