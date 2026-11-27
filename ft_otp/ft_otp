@@ -63,21 +63,45 @@ def save_key(encrypted_key, encryption_key):
     with os.fdopen(fd, "wb") as f:
         f.write(encryption_key)
 
+# Decrypt hexadecimal key
+def decrypt_key(file):
+
+    if not os.path.isfile(file):
+        print(f"File not found: {file}")
+        return None
+
+    if not os.path.isfile(".encryption.key"):
+        print("Encryption key file not found")
+        return None
+
+    with open(file, "rb") as f:
+        encrypted_key = f.read()
+
+    with open(".encryption.key", "rb") as f:
+        encryption_key = f.read()
+
+    cipher = Fernet(encryption_key)
+    decrypted_key = cipher.decrypt(encrypted_key)
+
+    return decrypted_key.decode()
+
 # Main function
 def main():
     args = parse_arguments()
 
     if args.g:
-        print(f"Generate mode: {args.g}")
-
         key = read_key(args.g)
+
         if key is not None:
             encrypted_key, encryption_key = encrypt_key(key)
             save_key(encrypted_key, encryption_key)
             print("Key was successfully saved in ft_otp.key.")
 
     if args.k:
-        print(f"OTP mode: {args.k}")
+        key = decrypt_key(args.k)
+
+        if key is not None:
+            print("Key successfully decrypted")
 
     if not args.g and not args.k:
         print("Usage: ./ft_otp [-g FILE] [-k FILE]")
