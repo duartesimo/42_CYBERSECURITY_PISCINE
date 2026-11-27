@@ -15,3 +15,4 @@ scorpion_samples/
 # ft_otp keys
 *.hex
 ft_otp.key
+.encryption.key

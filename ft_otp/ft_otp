@@ -50,6 +50,19 @@ def encrypt_key(key):
 
     return encrypted_key, encryption_key
 
+# Save encrypted key and encryption key
+def save_key(encrypted_key, encryption_key):
+
+    fd = os.open("ft_otp.key", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+
+    with os.fdopen(fd, "wb") as f:
+        f.write(encrypted_key)
+
+    fd = os.open(".encryption.key", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+
+    with os.fdopen(fd, "wb") as f:
+        f.write(encryption_key)
+
 # Main function
 def main():
     args = parse_arguments()
@@ -60,7 +73,8 @@ def main():
         key = read_key(args.g)
         if key is not None:
             encrypted_key, encryption_key = encrypt_key(key)
-            print("Key successfully encrypted")
+            save_key(encrypted_key, encryption_key)
+            print("Key was successfully saved in ft_otp.key.")
 
     if args.k:
         print(f"OTP mode: {args.k}")
