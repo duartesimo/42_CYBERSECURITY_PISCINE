@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 
 # Parse command-line arguments
 def parse_arguments():
@@ -10,12 +11,42 @@ def parse_arguments():
 
     return parser.parse_args()
 
+# Read and validate hexadecimal key
+def read_key(file):
+
+    if not os.path.isfile(file):
+        print(f"File not found: {file}")
+        return None
+
+    with open(file, "r") as f:
+        key = f.read().strip()
+
+    hex_chars = "0123456789abcdefABCDEF"
+
+    if len(key) < 64:
+        print("Key is too short")
+        return None
+
+    if len(key) % 2 != 0:
+        print("Key must have an even number of characters")
+        return None
+
+    for char in key:
+        if char not in hex_chars:
+            print("Invalid hexadecimal character")
+            return None
+    return key
+
 # Main function
 def main():
     args = parse_arguments()
 
     if args.g:
         print(f"Generate mode: {args.g}")
+
+        key = read_key(args.g)
+        if key is not None:
+            print("Valid hexadecimal key")
 
     if args.k:
         print(f"OTP mode: {args.k}")

@@ -11,3 +11,7 @@ spider_samples/
 
 # Scorpion testing
 scorpion_samples/
+
+# ft_otp keys
+*.hex
+ft_otp.key
